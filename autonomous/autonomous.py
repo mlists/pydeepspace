@@ -40,17 +40,11 @@ class AutoBase(AutonomousStateMachine):
             7, 1.8 + SwerveChassis.WIDTH / 2, -math.pi / 2, 0.75
         )
         self.start_pos = Waypoint(
-            1.2 + SwerveChassis.LENGTH / 2,
-            0,
-            0,
-            2,
-            #  + SwerveChassis.WIDTH / 2
+            1.2 + SwerveChassis.LENGTH / 2, 0 + SwerveChassis.WIDTH / 2, 0, 2
         )
 
         self.completed_runs = 0
-        self.desired_angle = 0
-        self.desired_angle_navx = 0
-        self.minimum_path_completion = 0.85
+        self.vision_min_remaining_path = 1
 
         self.acceleration = 1
         self.deceleration = -0.5
@@ -62,12 +56,10 @@ class AutoBase(AutonomousStateMachine):
         self.chassis.odometry_x = self.start_pos[0]
         self.chassis.odometry_y = self.start_pos[1]
         self.completed_runs = 0
-        # print(f"odometry = {self.current_pos}")
 
     @state(first=True)
     def drive_to_cargo_bay(self, initial_call):
         if initial_call:
-            # print(f"odometry = {self.current_pos}")
             if self.completed_runs == 0:
                 waypoints = insert_trapezoidal_waypoints(
                     (self.current_pos, self.front_cargo_bay),
@@ -161,14 +153,13 @@ class AutoBase(AutonomousStateMachine):
         if self.pursuit.completed_path:
             self.chassis.set_inputs(0, 0, 0, field_oriented=False)
             return
-        # TODO implement a system to allow for rotation in waypoints
         self.chassis.set_velocity_heading(vx, vy, heading)
 
-    def ready_for_vision(self):
-        if self.pursuit.waypoints[-1][4] - self.pursuit.distance_traveled < 1:
-            return True
-        else:
-            return False
+    def ready_for_vision(self) -> bool:
+        return (
+            self.pursuit.waypoints[-1][4] - self.pursuit.distance_traveled
+            < self.vision_min_remaining_path
+        )
 
 
 class RightStartAuto(AutoBase):
@@ -180,6 +171,7 @@ class RightStartAuto(AutoBase):
         self.setup_loading_bay = reflect_y(self.setup_loading_bay)
         self.loading_bay = reflect_y(self.loading_bay)
         self.side_cargo_bay = reflect_y(self.side_cargo_bay)
+        self.start_pos = reflect_y(self.start_pos)
 
 
 class LeftStartAuto(AutoBase):
