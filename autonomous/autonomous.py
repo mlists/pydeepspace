@@ -15,32 +15,32 @@ from utilities.pure_pursuit import PurePursuit, Waypoint, insert_trapezoidal_way
 @dataclass
 class Coordinates:
     start_pos: Waypoint
-    front_cargo_bay: Waypoint
+    front_cargo_ship: Waypoint
     setup_loading_bay: Waypoint
     loading_bay: Waypoint
-    side_cargo_bay_alignment_point: Waypoint
-    side_cargo_bay: Waypoint
+    side_cargo_ship_alignment_point: Waypoint
+    side_cargo_ship: Waypoint
 
 
 left_coordinates = Coordinates(
     start_pos=Waypoint(
         1.2 + SwerveChassis.LENGTH / 2, 0 + SwerveChassis.WIDTH / 2, 0, 2
     ),
-    front_cargo_bay=Waypoint(5.5 - SwerveChassis.LENGTH / 2, 0.3, 0, 1.5),
+    front_cargo_ship=Waypoint(5.5 - SwerveChassis.LENGTH / 2, 0.3, 0, 1.5),
     setup_loading_bay=Waypoint(3.3, 3, math.pi, 1),
     loading_bay=Waypoint(0.2 + SwerveChassis.LENGTH / 2, 3.4, math.pi, 1),
-    side_cargo_bay_alignment_point=Waypoint(
+    side_cargo_ship_alignment_point=Waypoint(
         6.6, 1.8 + SwerveChassis.WIDTH / 2, -math.pi / 2, 1.5
     ),
-    side_cargo_bay=Waypoint(6.6, 0.8 + SwerveChassis.WIDTH / 2, -math.pi / 2, 1),
+    side_cargo_ship=Waypoint(6.6, 0.8 + SwerveChassis.WIDTH / 2, -math.pi / 2, 1),
 )
 right_coordinates = Coordinates(
     start_pos=left_coordinates.start_pos.reflect(),
-    front_cargo_bay=left_coordinates.front_cargo_bay.reflect(),
+    front_cargo_ship=left_coordinates.front_cargo_ship.reflect(),
     setup_loading_bay=left_coordinates.setup_loading_bay.reflect(),
     loading_bay=left_coordinates.loading_bay.reflect(),
-    side_cargo_bay_alignment_point=left_coordinates.side_cargo_bay_alignment_point.reflect(),
-    side_cargo_bay=left_coordinates.side_cargo_bay.reflect(),
+    side_cargo_ship_alignment_point=left_coordinates.side_cargo_ship_alignment_point.reflect(),
+    side_cargo_ship=left_coordinates.side_cargo_ship.reflect(),
 )
 
 
@@ -84,11 +84,11 @@ class AutoBase(AutonomousStateMachine):
         self.completed_runs = 0
 
     @state(first=True)
-    def drive_to_cargo_bay(self, initial_call):
+    def drive_to_cargo_ship(self, initial_call):
         if initial_call:
             if self.completed_runs == 0:
                 waypoints = insert_trapezoidal_waypoints(
-                    (self.current_pos, self.coordinates.front_cargo_bay),
+                    (self.current_pos, self.coordinates.front_cargo_ship),
                     self.acceleration,
                     self.deceleration,
                 )
@@ -96,8 +96,8 @@ class AutoBase(AutonomousStateMachine):
                 waypoints = insert_trapezoidal_waypoints(
                     (
                         self.current_pos,
-                        self.coordinates.side_cargo_bay_alignment_point,
-                        self.coordinates.side_cargo_bay,
+                        self.coordinates.side_cargo_ship_alignment_point,
+                        self.coordinates.side_cargo_ship,
                     ),
                     self.acceleration,
                     self.deceleration,
@@ -165,7 +165,7 @@ class AutoBase(AutonomousStateMachine):
         if initial_call:
             self.hatch_intake.engage(initial_state="target_tape_align")
         elif not self.hatch_intake.is_executing:
-            self.next_state("drive_to_cargo_bay")
+            self.next_state("drive_to_cargo_ship")
 
     @state
     def stop(self):
@@ -228,13 +228,13 @@ class RightFrontOnly(FrontOnlyBase):
 
 class SideOnlyBase(AutoBase):
     @state(first=True)
-    def drive_to_cargo_bay(self, initial_call):
+    def drive_to_cargo_ship(self, initial_call):
         if initial_call:
             waypoints = insert_trapezoidal_waypoints(
                 (
                     self.current_pos,
-                    self.coordinates.side_cargo_bay_alignment_point,
-                    self.coordinates.side_cargo_bay,
+                    self.coordinates.side_cargo_ship_alignment_point,
+                    self.coordinates.side_cargo_ship,
                 ),
                 self.acceleration,
                 self.deceleration,
@@ -321,11 +321,11 @@ class DriveForwards(AutonomousStateMachine):
 
 class DoubleFrontBase(AutoBase):
     @state(first=True)
-    def drive_to_cargo_bay(self, initial_call):
+    def drive_to_cargo_ship(self, initial_call):
         if initial_call:
             if self.completed_runs == 0:
                 waypoints = insert_trapezoidal_waypoints(
-                    (self.current_pos, self.coordinates.front_cargo_bay),
+                    (self.current_pos, self.coordinates.front_cargo_ship),
                     self.acceleration,
                     self.deceleration,
                 )
@@ -334,7 +334,7 @@ class DoubleFrontBase(AutoBase):
                     (
                         self.current_pos,
                         self.coordinates.setup_loading_bay,
-                        self.coordinates.front_cargo_bay.reflect(),
+                        self.coordinates.front_cargo_ship.reflect(),
                     ),
                     self.acceleration,
                     self.deceleration,
