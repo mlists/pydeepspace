@@ -388,3 +388,118 @@ class DoubleFrontBase(AutoBase):
 class LeftDoubleFront(DoubleFrontBase):
     MODE_NAME = "Left Double Front Hatch"
 
+
+class RightDoubleFront(DoubleFrontBase):
+    MODE_NAME = "Right Double Front Hatch"
+
+    def __init__(self):
+        super().__init__()
+        self.coordinates = right_coordinates
+
+
+class CargoAutoBase(AutoBase):
+
+    cargo_deposit: CargoDepositAligner
+
+    cargo_component: CargoManipulator
+
+    def __init__(self):
+        super().__init__()
+        self.cargo_intake_speed = 0.5
+
+    def on_enable(self):
+        super().on_enable()
+        self.chassis.odometry_x = self.coordinates.start_pos_cargo.x
+        self.chassis.odometry_y = self.coordinates.start_pos_cargo.y
+
+    @state(first=True)
+    def drive_to_cargo_ship(self, initial_call):
+        if initial_call:
+            self.hatch.has_hatch = False
+            self.cargo_component.has_cargo = True
+            waypoints = insert_trapezoidal_waypoints(
+                (
+                    self.current_pos,
+                    self.coordinates.side_cargo_ship_alignment_point,
+                    self.coordinates.side_cargo_ship_middle,
+                ),
+                self.chassis.acceleration,
+                self.chassis.deceleration,
+            )
+            self.pursuit.build_path(waypoints)
+        self.follow_path()
+        if (
+            self.vision.fiducial_in_sight and self.ready_for_vision()
+        ) or self.pursuit.completed_path:
+            self.next_state("deposit_cargo")
+
+    @state
+    def deposit_cargo(self, initial_call):
+        if initial_call:
+            self.cargo_deposit.engage(initial_state="target_tape_align")
+        if not (self.cargo_deposit.is_executing or self.cargo.is_executing):
+            self.next_state("drive_to_cargo_depot_setup")
+
+    @state
+    def drive_to_cargo_depot_setup(self, initial_call):
+        if initial_call:
+            waypoints = insert_trapezoidal_waypoints(
+                (self.current_pos, self.coordinates.cargo_depot_setup),
+                self.chassis.acceleration,
+                self.chassis.deceleration,
+            )
+            self.pursuit.build_path(waypoints)
+        self.follow_path()
+        if self.pursuit.completed_path:
+            self.done()
+            # self.next_state("intake_cargo")
+
+    # @state
+    # def intake_cargo(self, initial_call):
+    #     """
+    #     Start cargo intake and move forwards slowly
+    #     """
+    #     if initial_call:
+    #         self.cargo.intake_floor()
+    #         self.chassis.set_inputs(
+    #             -self.cargo_intake_speed, 0, 0, field_orineted=False
+    #         )
+    #         # Move towards the cargo side of the robot
+    #     if self.cargo_component.has_cargo:
+    #         self.next_state("drive_to_endpoint")
+
+    @state
+    def drive_to_endpoint(self, initial_call):
+        """
+        Move to the point where we hand over to drivers
+        """
+        if initial_call:
+            waypoints = insert_trapezoidal_waypoints(
+                (
+                    self.current_pos,
+                    self.coordinates.side_cargo_ship_alignment_point,
+                    self.coordinates.cargo_endpoint,
+                ),
+                self.chassis.acceleration,
+                self.chassis.deceleration,
+            )
+            self.pursuit.build_path(waypoints)
+        self.follow_path()
+        if self.pursuit.completed_path:
+            self.done()
+
+
+class RightCargoAuto(CargoAutoBase):
+    MODE_NAME = "Right Cargo Pickup"
+
+    def __init__(self):
+        super().__init__()
+        self.coordinates = right_coordinates
+
+
+class LeftCargoAuto(CargoAutoBase):
+    MODE_NAME = "Left Cargo Pickup"
+
+    def __init__(self):
+        super().__init__()
+        self.coordinates = left_coordinates
