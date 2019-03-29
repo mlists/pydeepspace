@@ -3,9 +3,9 @@ import wpilib
 
 class Hatch:
 
-    hatch_fingers: wpilib.DoubleSolenoid
-    hatch_punchers: wpilib.Solenoid
-    hatch_enable_piston: wpilib.DoubleSolenoid
+    fingers: wpilib.DoubleSolenoid
+    punchers: wpilib.Solenoid
+    enable_piston: wpilib.DoubleSolenoid
 
     left_limit_switch: wpilib.DigitalInput
     right_limit_switch: wpilib.DigitalInput
@@ -17,15 +17,15 @@ class Hatch:
 
     def on_enable(self):
         self._punch_on = False
-        self.hatch_enable_piston.set(wpilib.DoubleSolenoid.Value.kForward)
+        self.enable_piston.set(wpilib.DoubleSolenoid.Value.kForward)
         self.loop_counter = 0
         self.enable_counter = 0
 
     def execute(self):
         """Run at the end of every control loop iteration."""
         delay = -1
-        self.hatch_fingers.set(self._fingers_state)
-        self.hatch_punchers.set(self._punch_on and self.loop_counter > delay)
+        self.fingers.set(self._fingers_state)
+        self.punchers.set(self._punch_on and self.loop_counter > delay)
         if self._punch_on and self.loop_counter > delay:
             self.has_hatch = False
         self.loop_counter += 1
