@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import math
 
-from magicbot.state_machine import AutonomousStateMachine, state, timed_state
+from magicbot.state_machine import AutonomousStateMachine, state
 import wpilib
 
 from automations.alignment import (
@@ -98,7 +98,7 @@ class AutoBase(AutonomousStateMachine):
 
     def setup(self):
         self.hatch.has_hatch = True
-        self.vision.camera = 0
+        self.vision.use_hatch()
 
     def on_enable(self):
         super().on_enable()
@@ -399,6 +399,8 @@ class RightDoubleFront(DoubleFrontBase):
 
 class CargoAutoBase(AutoBase):
 
+    vision: Vision
+
     cargo_deposit: CargoDepositAligner
 
     cargo_component: CargoManipulator
@@ -406,6 +408,10 @@ class CargoAutoBase(AutoBase):
     def __init__(self):
         super().__init__()
         self.cargo_intake_speed = 0.5
+
+    def setup(self):
+        self.cargo.has_cargo = True
+        self.vision.use_cargo()
 
     def on_enable(self):
         super().on_enable()
