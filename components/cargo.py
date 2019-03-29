@@ -59,8 +59,8 @@ class CargoManipulator:
         self.bottom_limit_switch = self.arm_motor.getForwardLimitSwitch(
             rev.LimitSwitchPolarity.kNormallyOpen
         )
-        # self.top_limit_switch.enableLimitSwitch(True)
-        # self.bottom_limit_switch.enableLimitSwitch(True)
+        self.top_limit_switch.enableLimitSwitch(True)
+        self.bottom_limit_switch.enableLimitSwitch(True)
 
         self.setpoint = Height.LOADING_STATION.value
         self.tolerance = 0.1
