@@ -66,14 +66,9 @@ class CargoManipulator:
         self.tolerance = 0.1
         self.has_cargo = False
 
-        # wpilib.SmartDashboard.putData("cargo_pid", self.pid_controller)
-
     def execute(self) -> None:
         self.intake_motor.set(ctre.ControlMode.PercentOutput, self.intake_motor_output)
         self.pid_controller.setReference(self.setpoint, rev.ControlType.kSmartMotion)
-        wpilib.SmartDashboard.putNumber(
-            "cargo_output", self.arm_motor.getAppliedOutput()
-        )
 
         if self.is_contained():
             self.has_cargo = True
