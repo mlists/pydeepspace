@@ -293,6 +293,10 @@ class SwerveChassis:
     def all_aligned(self):
         return all(module.aligned for module in self.modules)
 
+    def derate_drive_modules(self, max_voltage: int):
+        for module in self.modules:
+            module.drive_motor.configVoltageCompSaturation(max_voltage, timeoutMs=10)
+
     def set_modules_drive_coast(self):
         for module in self.modules:
             module.set_drive_coast()

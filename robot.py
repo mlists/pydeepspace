@@ -131,9 +131,7 @@ class Robot(magicbot.MagicRobot):
         self.hatch.enable_hatch = True
         self.hatch_intake.alignment_speed = 0.5
         self.hatch_deposit.alignment_speed = 0.5
-        for module in self.chassis.modules:
-            module.drive_motor.configVoltageCompSaturation(6, timeoutMs=10)
-            module.drive_motor.enableVoltageCompensation(True)
+        self.chassis.derate_drive_modules(6)
         super().autonomous()
 
     def disabledPeriodic(self):
@@ -145,9 +143,7 @@ class Robot(magicbot.MagicRobot):
         self.chassis.set_inputs(0, 0, 0)
         self.hatch_intake.alignment_speed = 0.5
         self.hatch_deposit.alignment_speed = 0.5
-        for module in self.chassis.modules:
-            module.drive_motor.configVoltageCompSaturation(9, timeoutMs=10)
-            module.drive_motor.enableVoltageCompensation(True)
+        self.chassis.derate_drive_modules(9)
 
     def teleopPeriodic(self):
         """Allow the drivers to control the robot."""
