@@ -226,7 +226,6 @@ class AutoBase(AutonomousStateMachine):
 
 class RightFullAuto(AutoBase):
     MODE_NAME = "Right Full Autonomous"
-    DEFAULT = True
 
     def __init__(self):
         super().__init__()
@@ -300,6 +299,7 @@ class RightSideOnly(SideOnlyBase):
 
 class DriveForwards(AutonomousStateMachine):
     MODE_NAME = "Drive Forwards - Default"
+    DEFAULT = True
 
     chassis: SwerveChassis
     imu: NavX
