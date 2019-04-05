@@ -23,19 +23,22 @@ class CargoManipulator:
 
     intake_switch: wpilib.DigitalInput
 
-    GEAR_RATIO = 7 * 5 * 84 / 50
+    # GEAR_RATIO = 7 * 5 * 84 / 50
+    GEAR_RATIO = (7/9) * 7 * 5 * 84 / 50
     UNITS_PER_RADIAN = 18.6 / math.radians(105)  # measured
 
-    INTAKE_SPEED = -0.75
+    INTAKE_SPEED = -1
     SLOW_INTAKE_SPEED = -0.4
     OUTTAKE_SPEED = 1.0
 
     def __init__(self):
         self.intake_motor_output = 0.0
+        self.set_not_moving()
 
     def setup(self) -> None:
         self.arm_motor.setIdleMode(rev.IdleMode.kBrake)
         self.arm_motor.setInverted(False)
+        # self.arm_motor.setSmartCurrentLimit(10)
 
         self.intake_motor.setNeutralMode(ctre.NeutralMode.Coast)
 
@@ -48,8 +51,8 @@ class CargoManipulator:
         self.pid_controller.setIZone(0)
         self.pid_controller.setFF(1 / 5675)
         self.pid_controller.setOutputRange(-1, 1)
-        self.pid_controller.setSmartMotionMaxVelocity(1200)  # rpm
-        self.pid_controller.setSmartMotionMaxAccel(1000)  # rpm/s
+        self.pid_controller.setSmartMotionMaxVelocity(800)  # rpm
+        self.pid_controller.setSmartMotionMaxAccel(600)  # rpm/s
         self.pid_controller.setSmartMotionAllowedClosedLoopError(0)
         self.pid_controller.setOutputRange(-1, 1)
 
@@ -74,9 +77,9 @@ class CargoManipulator:
             self.has_cargo = True
             self.vision.use_cargo()
 
-        if self.top_limit_switch.get():
+        if self.top_limit_switch.get() and not self.moving_down:
             self.encoder.setPosition(Height.LOADING_STATION.value)
-        if self.bottom_limit_switch.get():
+        if self.bottom_limit_switch.get() and not self.moving_up:
             self.encoder.setPosition(Height.FLOOR.value)
 
     def at_height(self, desired_height) -> bool:
@@ -89,6 +92,19 @@ class CargoManipulator:
             height: Height to move arm to
         """
         self.setpoint = height.value
+        self.logger.info(f"cargo move_to {self.setpoint}")
+
+    def set_moving_down(self):
+        self.moving_down = True
+        self.moving_up = False
+
+    def set_moving_up(self):
+        self.moving_down = False
+        self.moving_up = True
+
+    def set_not_moving(self):
+        self.moving_down = False
+        self.moving_up = False
 
     def on_disable(self) -> None:
         self.intake_motor.set(ctre.ControlMode.PercentOutput, 0)

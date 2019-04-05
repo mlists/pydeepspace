@@ -18,6 +18,7 @@ class CargoManager(StateMachine):
     @state(first=True, must_finish=True)
     def move_to_floor(self, initial_call, state_tm):
         self.cargo_component.move_to(Height.FLOOR)
+        self.cargo_component.set_moving_down()
         self.cargo_component.intake()
         self.next_state("intaking_cargo")
 
@@ -27,15 +28,18 @@ class CargoManager(StateMachine):
     @state(must_finish=True)
     def move_to_cargo_ship(self, initial_call, state_tm):
         self.cargo_component.move_to(Height.CARGO_SHIP)
+        self.cargo_component.set_moving_up()
         if self.cargo_component.at_height(Height.CARGO_SHIP):
             self.next_state("outtaking_cargo")
 
     def intake_loading(self, force=False):
+        self.cargo_component.set_not_moving()
         self.engage(initial_state="move_to_loading_station", force=force)
 
     @state(must_finish=True)
     def move_to_loading_station(self, initial_call, state_tm):
         self.cargo_component.move_to(Height.LOADING_STATION)
+        self.cargo_component.set_moving_up()
         self.cargo_component.intake()
         self.next_state("intaking_cargo")
 
@@ -50,16 +54,18 @@ class CargoManager(StateMachine):
     @state(must_finish=True)
     def outtaking_cargo(self, initial_call, state_tm):
         self.cargo_component.outtake()
+        self.cargo_component.set_not_moving()
 
         if state_tm > 1:
             self.vision.use_hatch()
             self.done()
 
-    @timed_state(duration=1)
+    @timed_state(duration=2)
     def finishing_intake(self):
         self.cargo_component.slow_intake()
 
     def done(self):
         self.cargo_component.stop()
         self.cargo_component.move_to(Height.LOADING_STATION)
+        self.cargo_component.set_not_moving()
         super().done()

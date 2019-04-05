@@ -80,6 +80,7 @@ class Robot(magicbot.MagicRobot):
             drive_talon=ctre.TalonSRX(8),
             x_pos=-x_dist,
             y_pos=y_dist,
+            reverse_drive_direction=True,
         )
         self.module_c = SwerveModule(  # bottom left module
             "c",
