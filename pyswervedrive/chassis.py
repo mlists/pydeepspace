@@ -4,6 +4,7 @@ from typing import Tuple
 
 import numpy as np
 from magicbot import tunable
+import wpilib
 from wpilib_controller import PIDController
 
 from utilities.navx import NavX
@@ -51,6 +52,7 @@ class SwerveChassis:
         self.heading_pid.setInputRange(-math.pi, math.pi)
         self.heading_pid.setOutputRange(-3, 3)
         self.heading_pid.setContinuous()
+        wpilib.SmartDashboard.putData(self.heading_pid)
         self.modules = [self.module_a, self.module_b, self.module_c, self.module_d]
 
         self.odometry_x = 0

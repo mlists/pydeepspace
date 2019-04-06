@@ -7,9 +7,11 @@ import wpilib
 
 from components.vision import Vision
 
+GEAR_RATIO = (7/9) * 7 * 5 * 84 / 50
+
 
 class Height(enum.Enum):
-    FLOOR = 18.6
+    FLOOR = 0.313 * GEAR_RATIO
     CARGO_SHIP = 0
     LOADING_STATION = 0
 
@@ -22,10 +24,6 @@ class CargoManipulator:
     intake_motor: ctre.VictorSPX
 
     intake_switch: wpilib.DigitalInput
-
-    # GEAR_RATIO = 7 * 5 * 84 / 50
-    GEAR_RATIO = (7/9) * 7 * 5 * 84 / 50
-    UNITS_PER_RADIAN = 18.6 / math.radians(105)  # measured
 
     INTAKE_SPEED = -1
     SLOW_INTAKE_SPEED = -0.4
@@ -57,11 +55,11 @@ class CargoManipulator:
         self.pid_controller.setOutputRange(-1, 1)
 
         self.top_limit_switch = self.arm_motor.getReverseLimitSwitch(
-            rev.LimitSwitchPolarity.kNormallyOpen
-        )
+                rev.LimitSwitchPolarity.kNormallyOpen
+                )
         self.bottom_limit_switch = self.arm_motor.getForwardLimitSwitch(
-            rev.LimitSwitchPolarity.kNormallyOpen
-        )
+                rev.LimitSwitchPolarity.kNormallyOpen
+                )
         self.top_limit_switch.enableLimitSwitch(True)
         self.bottom_limit_switch.enableLimitSwitch(True)
 
@@ -69,18 +67,20 @@ class CargoManipulator:
         self.tolerance = 0.1
         self.has_cargo = False
 
+        self.set_not_moving()
+
     def execute(self) -> None:
+        if self.top_limit_switch.get() and not self.moving_down:
+            self.encoder.setPosition(Height.LOADING_STATION.value)
+        if self.bottom_limit_switch.get() and not self.moving_up:
+            self.encoder.setPosition(Height.FLOOR.value)
+
         self.intake_motor.set(ctre.ControlMode.PercentOutput, self.intake_motor_output)
         self.pid_controller.setReference(self.setpoint, rev.ControlType.kSmartMotion)
 
         if self.is_contained():
             self.has_cargo = True
             self.vision.use_cargo()
-
-        if self.top_limit_switch.get() and not self.moving_down:
-            self.encoder.setPosition(Height.LOADING_STATION.value)
-        if self.bottom_limit_switch.get() and not self.moving_up:
-            self.encoder.setPosition(Height.FLOOR.value)
 
     def at_height(self, desired_height) -> bool:
         return abs(desired_height.value - self.encoder.getPosition()) <= self.tolerance
@@ -112,6 +112,7 @@ class CargoManipulator:
 
     def on_enable(self) -> None:
         self.setpoint = self.encoder.getPosition()
+        self.set_not_moving()
 
     def intake(self) -> None:
         self.intake_motor_output = self.INTAKE_SPEED

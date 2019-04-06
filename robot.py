@@ -125,7 +125,7 @@ class Robot(magicbot.MagicRobot):
         self.joystick = wpilib.Joystick(0)
         self.gamepad = wpilib.XboxController(1)
 
-        self.spin_rate = 2
+        self.spin_rate = 3
 
     def autonomous(self):
         self.imu.resetHeading()
@@ -266,7 +266,7 @@ class Robot(magicbot.MagicRobot):
             )  # Reversed side of robot
 
         if self.gamepad.getPOV() != -1:
-            speed = 1.3
+            speed = 1.0
             azimuth = math.radians(-self.gamepad.getPOV())
             if self.cargo_component.has_cargo:
                 azimuth += math.pi

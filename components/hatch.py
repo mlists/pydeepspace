@@ -27,7 +27,6 @@ class Hatch:
         self.fingers.set(self._fingers_state)
         value = self._punch_on and self.loop_counter > delay
         self.punchers.set(value)
-        print(value)
         if self._punch_on and self.loop_counter > delay:
             self.has_hatch = False
         self.loop_counter += 1
