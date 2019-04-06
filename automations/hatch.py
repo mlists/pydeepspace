@@ -16,11 +16,28 @@ class HatchAutomation(StateMachine):
         self.fired_position = 0, 0
 
     def grab(self):
+        self.hatch.retract()
         self.hatch.extend_fingers()
         self.hatch.has_hatch = True
 
     def outake(self, force=False):
-        self.engage("outaking", force=force)
+        if force:
+            self.engage("outaking_forceful", force=True)
+        else:
+            self.engage("outaking", force=True)
+
+    @state(must_finish=True)
+    def outaking_forceful(self, state_tm, initial_call):
+        if initial_call:
+            self.hatch.retract_fingers()
+        if state_tm > 0.5:
+            self.hatch.punch()
+            self.next_state("retract")
+
+    @state
+    def retract(self):
+        self.hatch.retract()
+        self.done()
 
     @state(first=True, must_finish=True)
     def outaking(self, state_tm, initial_call):
@@ -35,15 +52,5 @@ class HatchAutomation(StateMachine):
         """
         Ensure we have moved away before we retract punchers.
         """
-        if initial_call:
-            self.fired_position = self.chassis.position
-        if (
-            math.hypot(
-                self.fired_position[0] - self.chassis.position[0],
-                self.fired_position[1] - self.chassis.position[1],
-            )
-            > 0.5
-            or state_tm > 5
-        ):
-            self.hatch.retract()
-            self.done()
+        self.hatch.retract()
+        self.done()

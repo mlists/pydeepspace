@@ -25,7 +25,9 @@ class Hatch:
         """Run at the end of every control loop iteration."""
         delay = -1
         self.fingers.set(self._fingers_state)
-        self.punchers.set(self._punch_on and self.loop_counter > delay)
+        value = self._punch_on and self.loop_counter > delay
+        self.punchers.set(value)
+        print(value)
         if self._punch_on and self.loop_counter > delay:
             self.has_hatch = False
         self.loop_counter += 1
@@ -42,8 +44,17 @@ class Hatch:
         self.loop_counter = 0
         self._punch_on = True
 
+    def toggle_enable_piston(self):
+        if self.enable_piston.get() == wpilib.DoubleSolenoid.Value.kForward:
+            self.enable_piston.set(wpilib.DoubleSolenoid.Value.kReverse)
+        else:
+            self.enable_piston.set(wpilib.DoubleSolenoid.Value.kForward)
+
     def retract(self):
         self._punch_on = False
+
+    def toggle_fingers(self):
+        self._punch_on = not self._punch_on
 
     def extend_fingers(self):
         self._fingers_state = wpilib.DoubleSolenoid.Value.kForward

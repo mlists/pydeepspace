@@ -125,7 +125,7 @@ class Robot(magicbot.MagicRobot):
         self.joystick = wpilib.Joystick(0)
         self.gamepad = wpilib.XboxController(1)
 
-        self.spin_rate = 1.5
+        self.spin_rate = 2
 
     def autonomous(self):
         self.imu.resetHeading()
@@ -133,7 +133,7 @@ class Robot(magicbot.MagicRobot):
         self.hatch.enable_hatch = True
         self.hatch_intake.alignment_speed = 0.5
         self.hatch_deposit.alignment_speed = 0.5
-        self.chassis.derate_drive_modules(6)
+        self.chassis.derate_drive_modules(9)
         super().autonomous()
 
     def disabledPeriodic(self):
@@ -196,8 +196,6 @@ class Robot(magicbot.MagicRobot):
         # Starts Hatch Alignment and Cargo State Machines
         if (
             self.joystick.getTrigger()
-            or self.gamepad.getTriggerAxis(self.gamepad.Hand.kLeft) > 0.5
-            or self.gamepad.getTriggerAxis(self.gamepad.Hand.kRight) > 0.5
         ):
             angle = FieldAngle.closest(self.imu.getAngle())
             self.logger.info("closest field angle: %s", angle)
@@ -209,6 +207,11 @@ class Robot(magicbot.MagicRobot):
                 else:
                     self.hatch_deposit.engage()
             self.chassis.set_heading_sp(angle.value)
+
+        if self.gamepad.getTriggerAxis(self.gamepad.Hand.kRight) > 0.5:
+            self.hatch_automation.outake(force=True)
+        if self.gamepad.getTriggerAxis(self.gamepad.Hand.kLeft) > 0.5:
+            self.hatch_automation.grab()
 
         # Hatch Manual Outake/Intake
         if self.joystick.getRawButtonPressed(5) or self.gamepad.getBumperPressed(6):
@@ -222,6 +225,7 @@ class Robot(magicbot.MagicRobot):
         if self.gamepad.getXButtonPressed():
             self.hatch.retract_fingers()
             self.hatch.retract()
+            self.hatch.toggle_enable_piston()
 
         # Stops Cargo Intake Motor
         if self.gamepad.getBButtonPressed():
@@ -262,7 +266,7 @@ class Robot(magicbot.MagicRobot):
             )  # Reversed side of robot
 
         if self.gamepad.getPOV() != -1:
-            speed = 0.65
+            speed = 1.3
             azimuth = math.radians(-self.gamepad.getPOV())
             if self.cargo_component.has_cargo:
                 azimuth += math.pi
@@ -323,9 +327,6 @@ class Robot(magicbot.MagicRobot):
                     speed * math.sin(azimuth),
                     absolute_rotation=True,
                 )
-
-        if self.gamepad.getTriggerAxis(self.gamepad.Hand.kLeft) > 0.5:
-            self.hatch_enable_piston.set(wpilib.DoubleSolenoid.Value.kReverse)
 
 
 if __name__ == "__main__":

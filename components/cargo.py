@@ -40,7 +40,7 @@ class CargoManipulator:
         self.arm_motor.setInverted(False)
         # self.arm_motor.setSmartCurrentLimit(10)
 
-        self.intake_motor.setNeutralMode(ctre.NeutralMode.Coast)
+        self.intake_motor.setNeutralMode(ctre.NeutralMode.Brake)
 
         self.encoder = self.arm_motor.getEncoder()
 

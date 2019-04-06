@@ -60,7 +60,7 @@ class CargoManager(StateMachine):
             self.vision.use_hatch()
             self.done()
 
-    @timed_state(duration=2)
+    @timed_state(duration=5)
     def finishing_intake(self):
         self.cargo_component.slow_intake()
 

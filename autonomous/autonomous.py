@@ -298,8 +298,7 @@ class RightSideOnly(SideOnlyBase):
 
 
 class DriveForwards(AutonomousStateMachine):
-    MODE_NAME = "Drive Forwards - Default"
-    DEFAULT = True
+    MODE_NAME = "Drive Forwards"
 
     chassis: SwerveChassis
     imu: NavX

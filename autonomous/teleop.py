@@ -1,8 +1,10 @@
 import magicbot
+from pyswervedrive.chassis import SwerveChassis
 
 
 class TeleopSandstorm:
-    MODE_NAME = "Teleoperated"
+    MODE_NAME = "Teleoperated - Default"
+    DEFAULT = True
 
     robot: magicbot.MagicRobot
 
