@@ -183,7 +183,8 @@ class SwerveChassis:
         # print(lambda_e)
 
         now = time.monotonic()
-        vx, vy, vz = self.robot_movement_from_odometry(velocity_outputs, heading)
+        # vx, vy, vz = self.robot_movement_from_odometry(velocity_outputs, heading)
+        vx, vy, vz = 0, 0, 0
         # delta_x, delta_y, delta_z = self.robot_movement_from_odometry(
         # odometry_outputs, heading, z_vel=self.imu.getHeadingRate()
         # )
